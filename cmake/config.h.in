@@ -1,0 +1,18 @@
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+#cmakedefine HAVE_FNCTL_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine HAVE_LIMITS_H
+#cmakedefine HAVE_STDLIB_H
+#cmakedefine HAVE_UNISTD_H
+
+#cmakedefine HAVE_FTRUNCATE
+#cmakedefine HAVE_MEMSET
+#cmakedefine HAVE_MKDIR
+#cmakedefine HAVE_STRCHR
+#cmakedefine HAVE_STRERROR
+#cmakedefine HAVE_STRTOL
+
+#endif
+
