@@ -4,7 +4,7 @@ project(protobuf)
 
 if(MSVC)
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/vsprojects/config.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    add_definitions(/DHAVE_CONFIG_H)
+    add_definitions(/DHAVE_CONFIG_H /D_CRT_SECURE_NO_WARNINGS)
 else()
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
@@ -83,7 +83,7 @@ else()
     check_function_exists(strtol HAVE_STRTOL)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-    add_definitions(-DHAVE_CONFIG_H -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare)
+    add_definitions(-DHAVE_CONFIG_H -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare -D_GNU_SOURCE=1)
 endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -141,10 +141,12 @@ set(LIBPROTOBUF_SRC
 )
 
 add_library(libprotobuf ${LIBPROTOBUF_SRC})
-set_target_properties(libprotobuf
-    PROPERTIES
-    OUTPUT_NAME "protobuf"
-)
+if(NOT MSVC)
+    set_target_properties(libprotobuf
+        PROPERTIES
+        OUTPUT_NAME "protobuf"
+    )
+endif()
 
 set(LIBPROTOC_SRC
     ${PROTOBUF_DIR}/compiler/code_generator.cc
@@ -219,10 +221,12 @@ set(LIBPROTOC_SRC
 
 add_library(libprotoc ${LIBPROTOC_SRC})
 target_link_libraries(libprotoc libprotobuf)
-set_target_properties(libprotoc
-    PROPERTIES
-    OUTPUT_NAME "protoc"
-)
+if(NOT MSVC)
+    set_target_properties(libprotoc
+        PROPERTIES
+        OUTPUT_NAME "protoc"
+    )
+endif()
 
 set(PROTOC_SRC
     ${PROTOBUF_DIR}/compiler/main.cc
