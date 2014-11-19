@@ -6,34 +6,69 @@ if(MSVC)
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/vsprojects/config.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
     add_definitions(/DHAVE_CONFIG_H)
 else()
-    include(CheckIncludeFiles)
-    include(CheckFunctionExists)
-
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
         #if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
             # error GCC too old for unordered_map
         #endif"
-        STL_HASH_NEW_GCC
+        STL_HASH_OLD_GCC
     )
+    message(STATUS "Checking the location of hash_map")
     foreach(location unordered_map tr1/unordered_map)
         foreach(namespace std std::tr1)
-            set(HASH_MAP_H <${location}>)
-            set(HASH_NAMESPACE ${namespace})
-            check_cxx_source_compiles("
-                #include <${location}>
-                int main()
-                {
-                    const ${namespace}::unordered_map<int, int> t;
-                    return t.find(5) == t.end();
-                }"
-                HAVE_HASH_MAP
-            )
-
+            if(NOT HAVE_HASH_MAP OR STL_HASH_OLD_GCC)
+                set(HASH_MAP_H ${location} CACHE INTERNAL "Found hashmap header <${location}>")
+                set(HASH_NAMESPACE ${namespace} CACHE INTERNAL "Found hashmap namespace <${namespace}>")
+                set(HASH_MAP_CLASS unordered_map CACHE INTERNAL "Found hashmap class unordered_map")
+                set(CMAKE_REQUIRED_FLAGS -std=c++11)
+                check_cxx_source_compiles("
+                    #include <${location}>
+                    int main()
+                    {
+                        const ${namespace}::unordered_map<int, int> t;
+                        return t.find(5) == t.end();
+                    }"
+                    HAVE_HASH_MAP
+                )
+            endif()
         endforeach()
     endforeach()
-    message(${HAVE_HASH_MAP})
+    if(HAVE_HASH_MAP)
+        add_definitions(-std=c++11)
+    endif()
 
+    foreach(location ext/hash_map hash_map)
+        foreach(namespace __gnu_cxx "" std stdext)
+            if(NOT HAVE_HASH_MAP)
+                set(HASH_MAP_H ${location} CACHE INTERNAL "Found hashmap header <${HASH_MAP_H}>")
+                set(HASH_NAMESPACE ${namespace} CACHE INTERNAL "Found hashmap namespace - ${namespace}")
+                set(HASH_MAP_CLASS hash_map CACHE INTERNAL "Found hashmap class hash_map")
+                check_cxx_source_compiles("
+                    #include <${location}>
+                    int main()
+                    {
+                        ${namespace}::hash_map<int, int> t;
+                    }"
+                    HAVE_HASH_MAP
+                )
+            endif()
+        endforeach()
+    endforeach()
+    if(HAVE_HASH_MAP)
+        set(HAVE_HASH_SET ${HAVE_HASH_MAP})
+        string(REPLACE "map" "set" HASH_SET_H "${HASH_MAP_H}")
+        string(REPLACE "map" "set" HASH_SET_CLASS "${HASH_MAP_CLASS}")
+        message(STATUS "Found hash_map ${HASH_NAMESPACE}::${HASH_MAP_H} in header <${HASH_MAP_H}>")
+        message(STATUS "Found hash_set ${HASH_NAMESPACE}::${HASH_SET_H} in header <${HASH_SET_H}>")
+    else()
+        unset(HASH_NAMESPACE)
+        unset(HASH_MAP_CLASS)
+    endif()
+
+    include(CheckIncludeFiles)
+    include(CheckFunctionExists)
+
+    check_include_files(pthread.h HAVE_PTHREAD)
     check_include_files(fcntl.h HAVE_FCNTL_H)
     check_include_files(inttypes.h HAVE_INTTYPES_H)
     check_include_files(limits.h HAVE_LIMITS_H)
@@ -48,7 +83,7 @@ else()
     check_function_exists(strtol HAVE_STRTOL)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-    add_definitions(-DHAVE_CONFIG_H -DHAVE_PTHREAD -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare)
+    add_definitions(-DHAVE_CONFIG_H -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare)
 endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
