@@ -235,3 +235,11 @@ set(PROTOC_SRC
 add_executable(protoc ${PROTOC_SRC})
 target_link_libraries(protoc libprotoc)
 
+get_directory_property(HAS_PARENT_SCOPE PARENT_DIRECTORY)
+if(HAS_PARENT_SCOPE)
+    set(PROTOBUF_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
+    set(PROTOBUF_LIBRARIES libprotobuf PARENT_SCOPE)
+    set(PROTOBUF_PROTOC_LIBRARIES libprotoc PARENT_SCOPE)
+    set(PROTOBUF_PROTOC_EXECUTABLE protoc PARENT_SCOPE)
+endif
+
