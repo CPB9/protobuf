@@ -33,8 +33,9 @@ else()
             endif()
         endforeach()
     endforeach()
+    unset(CMAKE_REQUIRED_FLAGS)
     if(HAVE_HASH_MAP)
-        add_definitions(-std=c++11)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
 
     foreach(location ext/hash_map hash_map)
@@ -241,5 +242,5 @@ if(HAS_PARENT_SCOPE)
     set(PROTOBUF_LIBRARIES libprotobuf PARENT_SCOPE)
     set(PROTOBUF_PROTOC_LIBRARIES libprotoc PARENT_SCOPE)
     set(PROTOBUF_PROTOC_EXECUTABLE protoc PARENT_SCOPE)
-endif
+endif()
 
