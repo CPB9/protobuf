@@ -84,7 +84,7 @@ else()
     check_function_exists(strtol HAVE_STRTOL)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-    add_definitions(-DHAVE_CONFIG_H -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare -D_GNU_SOURCE=1)
+    add_definitions(-DHAVE_CONFIG_H -Wall -Wno-unused-local-typedefs -Wno-unused-function -Wno-return-type -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare -D_GNU_SOURCE=1)
 endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
